@@ -59,7 +59,7 @@ $GLOBALS['TL_DCA']['tl_sgrf_bsf'] = [
         'fuser' => [
             'label' => &$GLOBALS['TL_LANG']['tl_sgrf_bsf']['fuser'],
             'inputType' => 'select',
-            'options' => \Contao\SwbGasRegForm\Callbacks::getFEUsersOptions(),
+            'foreignKey' => "tl_member.CONCAT(firstname, ' ', lastname, ' (', id, ')')",
             'eval' => ['tl_class' => 'w50', 'mandatory' => true, 'includeBlankOption' => true],
             'sql' => ['type' => 'integer', 'default' => '0']
         ]
