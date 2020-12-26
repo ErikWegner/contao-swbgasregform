@@ -6,9 +6,11 @@ use Contao\CoreBundle\Controller\FrontendModule\AbstractFrontendModuleController
 use Contao\CoreBundle\ServiceAnnotation\FrontendModule;
 use Contao\ModuleModel;
 use Contao\Template;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Twig\Environment;
 
 /**
  * @FrontendModule("sgrf_antrag",
@@ -18,15 +20,9 @@ use Twig\Environment;
  */
 class SgrfEditFormController extends AbstractFrontendModuleController {
 
-    private $twig;
-
-    public function __construct(Environment $twig) {
-        $this->twig = $twig;
-    }
-
     protected function getResponse(Template $template, ModuleModel $model, Request $request): ?Response {
 
-        $form = $this->createFormBuilder($task)
+        $form = $this->createFormBuilder(null)
             ->add('task', TextType::class)
             ->add('dueDate', DateType::class)
             ->add('save', SubmitType::class, ['label' => 'Create Task'])
@@ -35,13 +31,7 @@ class SgrfEditFormController extends AbstractFrontendModuleController {
         $template->text = 'Hallo welt 2';
         $template->form = $form->createView();
 
-        return new Response($this->twig->render(
-            'sgrf_edit_form.html.twig',
-            [
-                'form' => $form,
-                'text' => 'Hallo twig welt',
-            ]
-        )); 
+        return $template->getResponse();
     }
 
 }
