@@ -1,3 +1,5 @@
 services:
     _defaults:
         autoconfigure: true
+    Contao\SwbGasRegForm\Controller\FrontendModule\SgrfEditFormController:
+        tags: {}
