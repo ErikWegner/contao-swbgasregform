@@ -1,32 +1,29 @@
-<h1>template: mod_sgrf_edit_form</h1>
+<h1>Antrag stellen/bearbeiten</h1>
 <?= $this->text; ?>
-<form method="POST"        >
+<form method="POST">
 <input type="hidden" name="REQUEST_TOKEN" value="{{REQUEST_TOKEN}}">
-            <?php foreach ($this->form->getIterator() as $field) { ?>
+    <?php foreach ($this->form->getIterator() as $field) { ?>
 
-                <div>
+        <div>
 
-                    <label
-                        for="<?php echo $field->vars['id']; ?>"
-                    >
-                        <?php echo $field->vars['label']; ?>
-                    </label>
+            <label
+                for="<?php echo $field->vars['id']; ?>"
+            >
+                <?php echo $field->vars['label']; ?>
+            </label>
 
-                    <input
-                        type="<?php echo $field->vars['block_prefixes'][1]; ?>"
-                        id="<?php echo $field->vars['id']; ?>"
-                        name="<?php echo $field->vars['full_name']; ?>"
-                        value="<?php echo $field->vars['value']; ?>"
-                    />
+            <input
+                type="<?php echo $field->vars['block_prefixes'][1]; ?>"
+                id="<?php echo $field->vars['id']; ?>"
+                name="<?php echo $field->vars['full_name']; ?>"
+                value="<?php echo $field->vars['value']; ?>"
+            />
 
-                    <?php if ($field->vars['required']) { ?>
-                        <span>This field is required</span>
-                    <?php } ?>
-
-                </div>
-
+            <?php if ($field->vars['required']) { ?>
+                <span>This field is required</span>
             <?php } ?>
 
-            <input type="submit" />
-        </form>
+        </div>
 
+    <?php } ?>
+</form>

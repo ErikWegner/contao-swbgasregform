@@ -3,3 +3,6 @@ services:
         autoconfigure: true
     Contao\SwbGasRegForm\Controller\FrontendModule\SgrfEditFormController:
         tags: {}
+    Contao\SwbGasRegForm\Controller\TokenController:
+        arguments:
+            - '@contao.security.token_checker'

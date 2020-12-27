@@ -2,6 +2,7 @@
 
 namespace Contao\SwbGasRegForm\Controller\FrontendModule;
 
+use Contao\SwbGasRegForm\Forms\RegistrationFormType;
 use Contao\CoreBundle\Controller\FrontendModule\AbstractFrontendModuleController;
 use Contao\CoreBundle\ServiceAnnotation\FrontendModule;
 use Contao\ModuleModel;
@@ -11,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Contao\SwbGasRegForm\Model\SgrfFormsModel;
 
 /**
  * @FrontendModule("sgrf_antrag",
@@ -22,13 +24,19 @@ class SgrfEditFormController extends AbstractFrontendModuleController {
 
     protected function getResponse(Template $template, ModuleModel $model, Request $request): ?Response {
 
-        $form = $this->createFormBuilder(null)
-            ->add('task', TextType::class)
-            ->add('dueDate', DateType::class)
-            ->add('save', SubmitType::class, ['label' => 'Create Task'])
-            ->getForm();
+        $formEntityId = $request->query->get('sgrfid');
+        $regdata = SgrfFormsModel::findById($formEntityId);
+        $form = $this->createForm(RegistrationFormType::class, $regdata);
 
-        $template->text = 'Hallo welt 2';
+        //$reg = new SgrfFormsModel();
+        //$reg->setCity($model->getCity());
+        //$form = $this->createForm(RegistrationFormType::class, $reg);
+
+        $form->handleRequest($request);
+
+        $user = $this->get('security.helper')->getUser();
+
+        $template->text = 'Hallo welt 2: ' . $user->username . " # " . $model->id . ' + ' . $formEntityId;
         $template->form = $form->createView();
 
         return $template->getResponse();
