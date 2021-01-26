@@ -1,8 +1,10 @@
 services:
     _defaults:
         autoconfigure: true
-    Contao\SwbGasRegForm\Controller\FrontendModule\SgrfEditFormController:
-        tags: {}
+    Contao\SwbGasRegForm\Controller\SgrfConnectorController:
+        arguments:
+            - '@contao.framework'
+            - '@feopenidprovider.resourceservice'
     Contao\SwbGasRegForm\Controller\TokenController:
         arguments:
             - '@contao.security.token_checker'
