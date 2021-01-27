@@ -70,7 +70,10 @@ class SgrfConnectorController extends AbstractController {
                 $r = [];
                 if ($members) {
                     foreach($members as $member) {
-                        $r[] = [$member->id => $member->username];
+                        $r[] = [
+                            'id' => $member->id,
+                            'u' => $member->username,
+                            ];
                     }
                 }
 
