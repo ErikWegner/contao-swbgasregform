@@ -109,11 +109,59 @@ class SgrfConnectorController extends AbstractController {
             $isAllowed = $this->userIsAllowed($userid);
 
             if ($isAllowed) {
-                // TODO: list all users by role
                 $r = [];
                 $roles = MemberGroupModel::findAll();
                 foreach($roles as $role) {
                     $r[] = [$role->id => $role-> name];
+                }
+
+                $response = new Response(json_encode($r), 200);
+            } else {
+                $response = new Response(json_encode(['error' => 'Not allowed.']), 403);
+            }
+
+            $response->headers->set('Content-Type', 'application/json');
+            return $response;
+        } catch (OAuthServerException $exception) {
+            $httpFoundationFactory = new HttpFoundationFactory();
+
+            return $httpFoundationFactory->createResponse($exception->generateHttpResponse($response));
+        }
+    }
+
+    /**
+     * @Route("/feuser/{id}", name="sgrf.connector.feuser_by_id", methods={"GET"}, requirements={"id"="\d+"})
+     */
+    public function feuserDetails(Request $symfonyRequest, $id): Response
+    {
+        $psr17Factory = new Psr17Factory();
+        $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
+        $request = $psrHttpFactory->createRequest($symfonyRequest);
+        $response = $psr17Factory->createResponse();
+
+        $server = $this->resService->getServer();
+
+        try {
+            $authenticatedRequest = $server->validateAuthenticatedRequest($request);
+
+            $isAllowed = $this->isClientAllowed($authenticatedRequest, 'userinfoapps');
+            if ($isAllowed) {
+                $userid = intval($id);
+                $r['user'] = $userid;
+                $member = MemberModel::findById($userid);
+
+                if ($member) {
+                    $r['username'] = $member->username;
+                    $r['given_name'] = $member->firstname;
+                    $r['family_name'] = $member->lastname;
+                    $r['email'] = $member->email;
+                    $groups = $member->getRelated('groups');
+                    $r['groups'] = array_map(
+                        static function ($g) {
+                            return $g->name;
+                        },
+                        $groups->getModels()
+                    );
                 }
 
                 $response = new Response(json_encode($r), 200);
@@ -160,5 +208,18 @@ class SgrfConnectorController extends AbstractController {
         }
         
         return false;
+    }
+
+    /**
+     * Check if client is configured for action
+     *
+     * @param Nyholm\Psr7\ServerRequest $authenticatedRequest The request
+     * @return boolean If client is listed
+     */
+    private function isClientAllowed($authenticatedRequest, $configkey) {
+        $configs = $this->getConfig()->get('sgrfconnector');
+        $client_id = $authenticatedRequest->getAttribute('oauth_client_id');
+
+        return in_array($client_id, $configs[$configkey]);
     }
 }
