@@ -62,7 +62,7 @@ class SgrfConnectorController extends AbstractController {
         try {
             $authenticatedRequest = $server->validateAuthenticatedRequest($request);
             $userid = $authenticatedRequest->getAttribute('oauth_user_id');
-            $isAllowed = $this->userIsAllowed($userid);
+            $isAllowed = $this->userIsAllowed($userid) || $this->isClientAllowed($authenticatedRequest, 'userinfoapps');
 
             if ($isAllowed) {
                 $role = MemberGroupModel::findById($symfonyRequest->get('roleid'));
@@ -195,6 +195,9 @@ class SgrfConnectorController extends AbstractController {
     
     private function userIsAllowed($userid) {
         $member = MemberModel::findById($userid);
+        if (!$member) {
+            return false;
+        }
         $groups = $member->getRelated('groups');
 
         $configs = $this->getConfig()->get('sgrfconnector');
