@@ -5,6 +5,3 @@ services:
         arguments:
             - '@contao.framework'
             - '@feopenidprovider.resourceservice'
-    Contao\SwbGasRegForm\Controller\TokenController:
-        arguments:
-            - '@contao.security.token_checker'

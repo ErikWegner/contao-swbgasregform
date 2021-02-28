@@ -155,6 +155,12 @@ class SgrfConnectorController extends AbstractController {
                     $r['given_name'] = $member->firstname;
                     $r['family_name'] = $member->lastname;
                     $r['email'] = $member->email;
+                    $r['company'] = $member->company;
+                    $r['street'] = $member->street;
+                    $r['postal'] = $member->postal;
+                    $r['city'] = $member->city;
+                    $r['phone'] = $member->phone;
+                    $r['sgrfausweis'] = $member->sgrfausweis;
                     $groups = $member->getRelated('groups');
                     $r['groups'] = array_map(
                         static function ($g) {
