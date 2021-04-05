@@ -1,0 +1,18 @@
+<?xml version="1.0" ?><xliff version="1.1">
+  <file datatype="php" original="src/Resources/contao/languages/en/tl_member.php" source-language="en" target-language="de">
+    <body>
+      <trans-unit id="tl_member.swbCompany.0">
+        <source>Comapny</source>
+        <target>Unternehmen</target>
+      </trans-unit>
+      <trans-unit id="tl_member.swbCompany.1">
+        <source>Please select the assigned company.</source>
+        <target>Bitte wählen Sie das zugeordnete Unternehmen aus.</target>
+      </trans-unit>
+      <trans-unit id="tl_member.company_legend">
+        <source>Company</source>
+        <target>Unternehmen</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
