@@ -9,6 +9,7 @@ use Contao\CoreBundle\Controller\AbstractController;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\MemberModel;
 use Contao\MemberGroupModel;
+use Contao\SwbGasRegForm\Model\SwbCompanyModel;
 use ErikWegner\FeOpenidProvider\Service\ResourceServerService;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -23,7 +24,8 @@ use Terminal42\ServiceAnnotationBundle\Annotation\ServiceTag;
  * @Route("/sgrf/connector", name=SgrfConnectorController::class, defaults={"_scope": "frontend"})
  * @ServiceTag("controller.service_arguments")
  */
-class SgrfConnectorController extends AbstractController {
+class SgrfConnectorController extends AbstractController
+{
     /**
      * @var ResourceServerService ResourceServerService
      */
@@ -69,11 +71,11 @@ class SgrfConnectorController extends AbstractController {
                 $members = MemberModel::findBy(['groups LIKE ?', 'username is not null'], ['%"' . $role->id . '"%']);
                 $r = [];
                 if ($members) {
-                    foreach($members as $member) {
+                    foreach ($members as $member) {
                         $r[] = [
                             'id' => $member->id,
                             'u' => $member->username,
-                            ];
+                        ];
                     }
                 }
 
@@ -90,7 +92,7 @@ class SgrfConnectorController extends AbstractController {
             return $httpFoundationFactory->createResponse($exception->generateHttpResponse($response));
         }
     }
-    
+
     /**
      * @Route("/feroles", name="sgrf.connector.feroles", methods={"GET"})
      */
@@ -111,8 +113,8 @@ class SgrfConnectorController extends AbstractController {
             if ($isAllowed) {
                 $r = [];
                 $roles = MemberGroupModel::findAll();
-                foreach($roles as $role) {
-                    $r[] = [$role->id => $role-> name];
+                foreach ($roles as $role) {
+                    $r[] = [$role->id => $role->name];
                 }
 
                 $response = new Response(json_encode($r), 200);
@@ -160,6 +162,23 @@ class SgrfConnectorController extends AbstractController {
                     $r['postal'] = $member->postal;
                     $r['city'] = $member->city;
                     $r['phone'] = $member->phone;
+                    $swbCompanyId = $member->swbCompany;
+                    if ($swbCompanyId) {
+                        $swbCompany = SwbCompanyModel::findById($swbCompanyId);
+                        $r['company'] = $swbCompany->title;
+                        $r['street'] = $swbCompany->street . ' ' . $swbCompany->housenumber;
+                        $r['postal'] = $swbCompany->postal;
+                        $r['city'] = $swbCompany->city;
+                        $r['phone'] = $swbCompany->phone;
+                        $r['company-email'] = $swbCompany->email;
+                        $uuids = \Contao\StringUtil::deserialize($swbCompany->logo, true);
+                        if (count($uuids)) {
+                            $file = \Contao\FilesModel::findByUuid($uuids[0]);
+                            $r['logo'] = $file->path;
+                        } else {
+                            $r['logo'] = null;
+                        }
+                    }
                     $r['sgrfausweis'] = $member->sgrfausweis;
                     $groups = $member->getRelated('groups');
                     $r['groups'] = array_map(
@@ -198,8 +217,9 @@ class SgrfConnectorController extends AbstractController {
 
         return $this->config;
     }
-    
-    private function userIsAllowed($userid) {
+
+    private function userIsAllowed($userid)
+    {
         $member = MemberModel::findById($userid);
         if (!$member) {
             return false;
@@ -210,12 +230,12 @@ class SgrfConnectorController extends AbstractController {
         $adminroleid = $configs['adminroleid'];
 
         foreach ($groups as $group) {
-            if ($group->id==$adminroleid) {
+            if ($group->id == $adminroleid) {
                 return true;
                 break;
             }
         }
-        
+
         return false;
     }
 
@@ -225,7 +245,8 @@ class SgrfConnectorController extends AbstractController {
      * @param Nyholm\Psr7\ServerRequest $authenticatedRequest The request
      * @return boolean If client is listed
      */
-    private function isClientAllowed($authenticatedRequest, $configkey) {
+    private function isClientAllowed($authenticatedRequest, $configkey)
+    {
         $configs = $this->getConfig()->get('sgrfconnector');
         $client_id = $authenticatedRequest->getAttribute('oauth_client_id');
 
