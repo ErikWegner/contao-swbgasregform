@@ -187,6 +187,13 @@ class SgrfConnectorController extends AbstractController
                         },
                         $groups->getModels()
                     );
+
+                    foreach ($r as $k => $v) {
+                        # https://www.php.net/manual/en/function.html-entity-decode.php#104617
+                        $r[$k] = preg_replace_callback("/(&#[0-9]+;)/", function ($m) {
+                            return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES");
+                        }, $v);
+                    }
                 }
 
                 $response = new Response(json_encode($r), 200);
