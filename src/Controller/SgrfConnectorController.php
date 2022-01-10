@@ -211,6 +211,51 @@ class SgrfConnectorController extends AbstractController
     }
 
     /**
+     * @Route("/feusermodifications/{since}", name="sgrf.connector.feuser_modifications_since", methods={"GET"}, requirements={"since"="\d+"})
+     */
+    public function modifiedUsers(Request $symfonyRequest, $since): Response
+    {
+        $psr17Factory = new Psr17Factory();
+        $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
+        $request = $psrHttpFactory->createRequest($symfonyRequest);
+        $response = $psr17Factory->createResponse();
+
+        $server = $this->resService->getServer();
+
+        try {
+            $authenticatedRequest = $server->validateAuthenticatedRequest($request);
+
+            $isAllowed = $this->isClientAllowed($authenticatedRequest, 'userinfoapps');
+            if ($isAllowed) {
+                $modifiedUsers = MemberModel::findBy(['tstamp > ?'], [intval($since)], ['limit' => 30, 'order' => 'tstamp ASC']);
+
+                $r = ['users' => []];
+                foreach ($modifiedUsers as $modifiedUser) {
+                    $r['users'][] = [
+                        'family_name' => $modifiedUser->lastname,
+                        'given_name' => $modifiedUser->firstname,
+                        'updated' => $modifiedUser->tstamp,
+                        // TODO: ausweis?
+                        // TODO: logo?
+                        // TODO: unternehmen?
+                    ];
+                }
+
+                $response = new Response(json_encode($r), 200);
+            } else {
+                $response = new Response(json_encode(['error' => 'Not allowed.']), 403);
+            }
+
+            $response->headers->set('Content-Type', 'application/json');
+            return $response;
+        } catch (OAuthServerException $exception) {
+            $httpFoundationFactory = new HttpFoundationFactory();
+
+            return $httpFoundationFactory->createResponse($exception->generateHttpResponse($response));
+        }
+    }
+
+    /**
      * Gets the configuration.
      *
      * @return Config The Configuration
