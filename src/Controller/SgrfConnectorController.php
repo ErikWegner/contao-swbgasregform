@@ -162,6 +162,7 @@ class SgrfConnectorController extends AbstractController
                     $r['postal'] = $member->postal;
                     $r['city'] = $member->city;
                     $r['phone'] = $member->phone;
+                    $r['updated'] = intval($member->tstamp);
                     $swbCompanyId = $member->swbCompany;
                     if ($swbCompanyId) {
                         $swbCompany = SwbCompanyModel::findById($swbCompanyId);
@@ -189,10 +190,10 @@ class SgrfConnectorController extends AbstractController
                     );
 
                     foreach ($r as $k => $v) {
-                        # https://www.php.net/manual/en/function.html-entity-decode.php#104617
-                        $r[$k] = preg_replace_callback("/(&#[0-9]+;)/", function ($m) {
-                            return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES");
-                        }, $v);
+                        if (!is_string($v)) {
+                            continue;
+                        }
+                        $r[$k] = $this->mbconvert($v);
                     }
                 }
 
@@ -230,15 +231,16 @@ class SgrfConnectorController extends AbstractController
                 $modifiedUsers = MemberModel::findBy(['tstamp > ?'], [intval($since)], ['limit' => 30, 'order' => 'tstamp ASC']);
 
                 $r = ['users' => []];
-                foreach ($modifiedUsers as $modifiedUser) {
-                    $r['users'][] = [
-                        'family_name' => $modifiedUser->lastname,
-                        'given_name' => $modifiedUser->firstname,
-                        'updated' => $modifiedUser->tstamp,
-                        // TODO: ausweis?
-                        // TODO: logo?
-                        // TODO: unternehmen?
-                    ];
+                if ($modifiedUsers) {
+                    foreach ($modifiedUsers as $modifiedUser) {
+                        $r['users'][] = [
+                            'id' => intval($modifiedUser->id),
+                            'family_name' => $this->mbconvert($modifiedUser->lastname),
+                            'given_name' => $this->mbconvert($modifiedUser->firstname),
+                            'updated' => intval($modifiedUser->tstamp),
+                            'email' => $this->mbconvert($modifiedUser->email),
+                        ];
+                    }
                 }
 
                 $response = new Response(json_encode($r), 200);
@@ -303,5 +305,18 @@ class SgrfConnectorController extends AbstractController
         $client_id = $authenticatedRequest->getAttribute('oauth_client_id');
 
         return in_array($client_id, $configs[$configkey]);
+    }
+
+    /**
+     * Multibyte conversion
+     * @param string $i Input string
+     * @return string The converted string
+     */
+    private function mbconvert($i)
+    {
+        # https://www.php.net/manual/en/function.html-entity-decode.php#104617
+        return preg_replace_callback("/(&#[0-9]+;)/", function ($m) {
+            return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES");
+        }, $i);
     }
 }
