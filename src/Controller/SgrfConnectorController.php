@@ -68,7 +68,7 @@ class SgrfConnectorController extends AbstractController
 
             if ($isAllowed) {
                 $role = MemberGroupModel::findById($symfonyRequest->get('roleid'));
-                $members = MemberModel::findBy(['groups LIKE ?', 'username is not null'], ['%"' . $role->id . '"%']);
+                $members = MemberModel::findBy(['`groups` LIKE ?', 'username is not null'], ['%"' . $role->id . '"%']);
                 $r = [];
                 if ($members) {
                     foreach ($members as $member) {
