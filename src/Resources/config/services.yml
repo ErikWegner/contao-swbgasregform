@@ -5,3 +5,6 @@ services:
         arguments:
             - '@contao.framework'
             - '@feopenidprovider.resourceservice'
+        calls:
+            - method: setContainer
+              arguments: ['@service_container']
